@@ -63,6 +63,9 @@ type Request struct {
 	Authority      Authority
 	ConversationID string
 	RunID          string
+	// CorrelationID is assigned by the execution owner and propagated across
+	// tool-owner boundaries. A model cannot supply or replace it.
+	CorrelationID  string
 	Step           int
 	Call           Call
 	Definition     Definition
