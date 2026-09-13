@@ -60,6 +60,9 @@ type ConfirmationVerifier interface {
 }
 
 type Request struct {
+	// ResultProducer is server-owned provenance for independent reading of a
+	// published result. It never replaces Authority or authorizes execution.
+	ResultProducer *Authority `json:"-"`
 	// OutcomeInspectionToken permits only an owner-fenced receipt query, never an invocation.
 	// It is local to the receipt inspector and must not cross unrelated RPC APIs.
 	OutcomeInspectionToken string `json:"-"`
