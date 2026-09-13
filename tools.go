@@ -60,9 +60,12 @@ type ConfirmationVerifier interface {
 }
 
 type Request struct {
-	Authority      Authority
-	ConversationID string
-	RunID          string
+	// OutcomeInspectionToken permits only an owner-fenced receipt query, never an invocation.
+	// It is local to the receipt inspector and must not cross unrelated RPC APIs.
+	OutcomeInspectionToken string `json:"-"`
+	Authority              Authority
+	ConversationID         string
+	RunID                  string
 	// CorrelationID is assigned by the execution owner and propagated across
 	// tool-owner boundaries. A model cannot supply or replace it.
 	CorrelationID  string
@@ -96,4 +99,28 @@ type Host interface {
 }
 type ResultAuthorizer interface {
 	AuthorizeConversationToolResult(context.Context, Request, Result) error
+}
+
+// ResultReadAuthorizer authorizes reading an already persisted result using
+// current source/data permissions, independently of permission to execute the
+// tool. Implementations must validate the exact definition, request, result and
+// source scope without invoking or reconciling the operation. The caller must
+// separately authorize access to the containing delivery or other resource.
+// Missing support denies independent reading; ResultAuthorizer and successful
+// execution authorization are not substitutes for this explicit policy.
+type ResultReadAuthorizer interface {
+	AuthorizeConversationToolResultRead(context.Context, Request, Result) error
+}
+
+// ResultReadUnsupportedCode indicates that no independent reading policy is
+// registered. Callers may still use their normal execution-authorized path;
+// this code never grants reading and is distinct from a source policy denial.
+const ResultReadUnsupportedCode = "tool.result_read_unsupported"
+
+// OutcomeInspector only observes the immutable receipt of this exact call and
+// idempotency key. It MUST NOT invoke, retry, repair or submit an operation. A
+// missing or still-changing receipt is uncertain, never proof of no effect.
+// Registration is explicit because Reconcile may perform an idempotent write.
+type OutcomeInspector interface {
+	InspectConversationToolOutcome(context.Context, Request) (Result, error)
 }
