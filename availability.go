@@ -10,6 +10,17 @@ type Availability interface {
 	ConversationToolAvailable(context.Context, Authority, string) (bool, error)
 }
 
+// ResultReadAvailability keeps user preferences and source readiness while
+// avoiding catalogs gated by permission to execute a tool. It grants no access
+// to result contents; ResultReadAuthorizer remains mandatory for that path.
+type ResultReadAvailability interface {
+	ConversationToolResultReadAvailable(context.Context, Authority, string) (bool, error)
+}
+
+type ResultReadConnectionAvailability interface {
+	ToolResultReadConnectionAvailable(context.Context, Authority, string) (bool, error)
+}
+
 // Catalog exposes only the current authorized deployment selection. A settings
 // service must receive this before applying preferences, avoiding feedback from
 // its own availability filter. Engines retain their Agent/Skill whitelists.
