@@ -45,7 +45,11 @@ func ScheduleDefinitions() []Definition {
   }
 }`)
 	base := func(key, description, effect, idempotency string, input json.RawMessage) Definition {
-		return Definition{Key: key, Version: "2", ActionKey: "agent.conversation_tools." + key, Description: description, InputSchema: input, OutputSchema: output, Effect: effect, Idempotency: idempotency, TimeoutMillis: 10000, MaxOutputBytes: 65536}
+		parallelism := ""
+		if effect == "read" {
+			parallelism = ToolParallelismIndependentRead
+		}
+		return Definition{Key: key, Version: "2", ActionKey: "agent.conversation_tools." + key, Description: description, InputSchema: input, OutputSchema: output, Effect: effect, Idempotency: idempotency, Parallelism: parallelism, TimeoutMillis: 10000, MaxOutputBytes: 65536}
 	}
 	createInput := json.RawMessage(`{"type":"object","additionalProperties":false,"properties":{"kind":{"type":"string","enum":["background_task","follow_up","reminder"]},"name":{"type":"string","minLength":1,"maxLength":500},"timezone":{"type":"string","minLength":1,"maxLength":128},"trigger":` + string(trigger) + `,"details":` + string(details) + `},"required":["kind","name","trigger","details"]}`)
 	listInput := json.RawMessage(`{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string","enum":["enabled","disabled","paused"]},"cursor":{"type":"string","maxLength":191},"limit":{"type":"integer","minimum":1,"maximum":100}}}`)

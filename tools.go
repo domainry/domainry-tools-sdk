@@ -7,6 +7,13 @@ import (
 	"time"
 )
 
+const (
+	// ToolParallelismIndependentRead is an explicit tool-owner promise that
+	// invocations have no ordering dependency or externally visible mutation.
+	// The execution owner still chooses the batch size and authorizes every call.
+	ToolParallelismIndependentRead = "independent_read"
+)
+
 type Authority struct {
 	Known       bool   `json:"known"`
 	RuntimeID   string `json:"runtime_id"`
@@ -16,16 +23,19 @@ type Authority struct {
 }
 
 type Definition struct {
-	Key            string          `json:"key"`
-	Version        string          `json:"version"`
-	Description    string          `json:"description"`
-	InputSchema    json.RawMessage `json:"input_schema"`
-	OutputSchema   json.RawMessage `json:"output_schema"`
-	ActionKey      string          `json:"action_key"`
-	Effect         string          `json:"effect"`      // read or write
-	Idempotency    string          `json:"idempotency"` // natural, key or reconcile
-	TimeoutMillis  int             `json:"timeout_ms"`
-	MaxOutputBytes int             `json:"max_output_bytes"`
+	Key          string          `json:"key"`
+	Version      string          `json:"version"`
+	Description  string          `json:"description"`
+	InputSchema  json.RawMessage `json:"input_schema"`
+	OutputSchema json.RawMessage `json:"output_schema"`
+	ActionKey    string          `json:"action_key"`
+	Effect       string          `json:"effect"`      // read or write
+	Idempotency  string          `json:"idempotency"` // natural, key or reconcile
+	// Empty is serial. independent_read is valid only for read tools and lets
+	// an execution owner run calls from the same model step concurrently.
+	Parallelism    string `json:"parallelism,omitempty"`
+	TimeoutMillis  int    `json:"timeout_ms"`
+	MaxOutputBytes int    `json:"max_output_bytes"`
 }
 
 type Call struct {
