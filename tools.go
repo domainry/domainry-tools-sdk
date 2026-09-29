@@ -102,6 +102,24 @@ type Result struct {
 	Content    json.RawMessage `json:"content,omitempty"`
 	ErrorCode  string          `json:"error_code,omitempty"`
 	ResourceID string          `json:"resource_id,omitempty"`
+	// Citations are source-owned references into the exact authorized result.
+	// They are not access grants or a substitute for result-read authorization.
+	// Consumers must reauthorize the containing result before returning a saved
+	// citation.
+	Citations []Citation `json:"citations,omitempty"`
+}
+
+// Citation is a bounded, provider-neutral source reference emitted by a tool
+// owner together with its result. Excerpt must be copied from the returned
+// source projection; callers must never manufacture or enrich it.
+type Citation struct {
+	ID        string `json:"id"`
+	Source    string `json:"source"`
+	Operation string `json:"operation"`
+	ObjectKey string `json:"object_key,omitempty"`
+	RecordID  string `json:"record_id,omitempty"`
+	Title     string `json:"title,omitempty"`
+	Excerpt   string `json:"excerpt,omitempty"`
 }
 
 type Host interface {
