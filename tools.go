@@ -33,9 +33,10 @@ type Definition struct {
 	Idempotency  string          `json:"idempotency"` // natural, key or reconcile
 	// Empty is serial. independent_read is valid only for read tools and lets
 	// an execution owner run calls from the same model step concurrently.
-	Parallelism    string `json:"parallelism,omitempty"`
-	TimeoutMillis  int    `json:"timeout_ms"`
-	MaxOutputBytes int    `json:"max_output_bytes"`
+	Parallelism    string         `json:"parallelism,omitempty"`
+	ExecutionPlan  []ProgressStep `json:"execution_plan,omitempty"`
+	TimeoutMillis  int            `json:"timeout_ms"`
+	MaxOutputBytes int            `json:"max_output_bytes"`
 }
 
 type Call struct {
@@ -61,6 +62,58 @@ type Confirmation struct {
 	ApprovedAt    time.Time
 }
 
+// ProgressStep is a source-owned stage declared before an invocation starts.
+// Its order is the only valid execution order for the corresponding tool.
+type ProgressStep struct {
+	Key    string `json:"key"`
+	Label  string `json:"label"`
+	Detail string `json:"detail,omitempty"`
+}
+
+// Progress is a bounded status update for one declared execution-plan step.
+type Progress struct {
+	Key    string `json:"key"`
+	Detail string `json:"detail,omitempty"`
+	Status string `json:"status"` // started, completed or failed
+}
+
+type ProgressReporter func(context.Context, Progress) error
+
+type progressReporterContextKey struct{}
+
+// WithProgressReporter installs an execution-owner callback on a local tool
+// context. The callback is intentionally not part of Request and therefore
+// cannot cross an RPC boundary or be supplied by model arguments.
+func WithProgressReporter(ctx context.Context, reporter ProgressReporter) context.Context {
+	if reporter == nil {
+		return ctx
+	}
+	return context.WithValue(ctx, progressReporterContextKey{}, reporter)
+}
+
+// ReportProgress synchronously hands a status update to the execution owner.
+// Tools without an owner-provided reporter remain valid and simply continue.
+func ReportProgress(ctx context.Context, progress Progress) error {
+	reporter, _ := ctx.Value(progressReporterContextKey{}).(ProgressReporter)
+	if reporter == nil {
+		return nil
+	}
+	return reporter(ctx, progress)
+}
+
+// SourceAttachment is immutable attachment provenance resolved by the Agent
+// execution owner from the frozen conversation input. It is never populated
+// from model arguments and must not be serialized into tool receipts.
+type SourceAttachment struct {
+	ConversationID string
+	AttachmentID   string
+	Filename       string
+	ContentType    string
+	Bytes          int64
+	SHA256         string
+	Revision       int64
+}
+
 // ConfirmationVerifier is supplied by the execution owner. It verifies the
 // persisted approval for this exact actor, run, call, definition and arguments.
 // A structurally valid Confirmation value alone is never execution authority.
@@ -76,9 +129,13 @@ type Request struct {
 	// OutcomeInspectionToken permits only an owner-fenced receipt query, never an invocation.
 	// It is local to the receipt inspector and must not cross unrelated RPC APIs.
 	OutcomeInspectionToken string `json:"-"`
-	Authority              Authority
-	ConversationID         string
-	RunID                  string
+	// SourceAttachments contains only direct user attachments that were frozen
+	// into this run's model input. Tool implementations may bind an argument's
+	// attachment ID to this list; models cannot add to or modify it.
+	SourceAttachments []SourceAttachment `json:"-"`
+	Authority         Authority
+	ConversationID    string
+	RunID             string
 	// CorrelationID is assigned by the execution owner and propagated across
 	// tool-owner boundaries. A model cannot supply or replace it.
 	CorrelationID  string
