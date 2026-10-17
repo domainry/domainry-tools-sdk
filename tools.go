@@ -12,6 +12,12 @@ const (
 	// invocations have no ordering dependency or externally visible mutation.
 	// The execution owner still chooses the batch size and authorizes every call.
 	ToolParallelismIndependentRead = "independent_read"
+
+	ProgressStatusPlanned   = "planned"
+	ProgressStatusStarted   = "started"
+	ProgressStatusCompleted = "completed"
+	ProgressStatusSkipped   = "skipped"
+	ProgressStatusFailed    = "failed"
 )
 
 type Authority struct {
@@ -65,16 +71,17 @@ type Confirmation struct {
 // ProgressStep is a source-owned stage declared before an invocation starts.
 // Its order is the only valid execution order for the corresponding tool.
 type ProgressStep struct {
-	Key    string `json:"key"`
-	Label  string `json:"label"`
-	Detail string `json:"detail,omitempty"`
+	Key      string `json:"key"`
+	Label    string `json:"label"`
+	Detail   string `json:"detail,omitempty"`
+	Optional bool   `json:"optional,omitempty"`
 }
 
 // Progress is a bounded status update for one declared execution-plan step.
 type Progress struct {
 	Key    string `json:"key"`
 	Detail string `json:"detail,omitempty"`
-	Status string `json:"status"` // started, completed or failed
+	Status string `json:"status"` // started, completed, skipped or failed
 }
 
 type ProgressReporter func(context.Context, Progress) error
@@ -129,9 +136,10 @@ type Request struct {
 	// OutcomeInspectionToken permits only an owner-fenced receipt query, never an invocation.
 	// It is local to the receipt inspector and must not cross unrelated RPC APIs.
 	OutcomeInspectionToken string `json:"-"`
-	// SourceAttachments contains only direct user attachments that were frozen
-	// into this run's model input. Tool implementations may bind an argument's
-	// attachment ID to this list; models cannot add to or modify it.
+	// SourceAttachments contains only direct user attachments durably frozen in
+	// this conversation through the current user message and revalidated by the
+	// execution owner. Tool implementations may bind an argument's attachment ID
+	// to this list; models cannot add to or modify it.
 	SourceAttachments []SourceAttachment `json:"-"`
 	Authority         Authority
 	ConversationID    string

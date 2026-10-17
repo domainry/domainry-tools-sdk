@@ -140,8 +140,18 @@ type ConnectionAccountSubjectResolver func(context.Context, Authority, string) (
 // ConversationToolCapabilities contains topology facts only. It never carries
 // stores or module implementations.
 type ConversationToolCapabilities struct {
-	Business bool
-	MCP      bool
+	Business     bool
+	AccountReads bool
+	MCP          bool
+}
+
+// ConversationAccountReadPorts are the shared Integration ports used by
+// account-backed read tools such as public web search and fetch. The product
+// tool factory selects the concrete account; model input never does.
+type ConversationAccountReadPorts struct {
+	Accounts ConnectionAccounts
+	Reads    integrationsdk.ConnectionAccountReads
+	Subject  ConnectionAccountSubjectResolver
 }
 
 // ConversationMCPPorts are SDK-owned Integration ports supplied by the
@@ -161,6 +171,7 @@ type ConversationToolAssembly struct {
 	ReportSource   func() ReportSource
 	AnalysisSource func() AnalysisSource
 	Authorize      ConversationToolAuthorizer
+	AccountReads   *ConversationAccountReadPorts
 	MCP            *ConversationMCPPorts
 }
 
