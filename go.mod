@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/domainry/domainry-foundation v0.1.44
-	github.com/domainry/domainry-integration-sdk v0.1.16
+	github.com/domainry/domainry-integration-sdk v0.1.17
 	github.com/domainry/domainry-orm v0.1.33
 	github.com/domainry/domainry-report-sdk v0.1.18
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3
