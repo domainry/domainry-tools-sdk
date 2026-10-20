@@ -8,8 +8,8 @@ github.com/domainry/domainry-integration-sdk v0.1.19 h1:gKB1AGrhB4yyTxrdryioN37H
 github.com/domainry/domainry-integration-sdk v0.1.19/go.mod h1:TpDwKciwCarnDeCxeX3sOnKwjSZQ5mg1//se0rdZfmg=
 github.com/domainry/domainry-orm v0.1.33 h1:gpCXkwDvJhJkiLMkA9awJ44KaFVtpBC6fh9v/EywT24=
 github.com/domainry/domainry-orm v0.1.33/go.mod h1:gB/ooN737tsBYHbeHqCpngEprvdvZKp0Zygtzv+IPJY=
-github.com/domainry/domainry-report-sdk v0.1.21 h1:WIIEUrrcymUF3QSWCKk3kxnb2oQiT4oSVxBJtG0tt34=
-github.com/domainry/domainry-report-sdk v0.1.21/go.mod h1:i367iAzhlraUBWj6AdpzW9tFexZNe8DOttfqitE4ylc=
+github.com/domainry/domainry-report-sdk v0.1.22 h1:MsJyIUoqTa006ULbjqDvzUN8WLkqLDoSyCZ5WIfVoUA=
+github.com/domainry/domainry-report-sdk v0.1.22/go.mod h1:lrCTTlGAZI+uLXgROnZV8ns3rb0iSZEi3kob/mEe7kA=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
 github.com/jackc/pgpassfile v1.0.0/go.mod h1:CEx0iS5ambNFdcRtxPj5JhEz+xB6uRky5eyVu/W2HEg=
 github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 h1:iCEnooe7UlwOQYpKFhBabPMi4aNAfoODPEFNiAnClxo=
