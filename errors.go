@@ -1,11 +1,29 @@
 package toolsdk
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/domainry/domainry-foundation/apperror"
+)
+
+type ErrorClass = apperror.ErrorKind
+
+const (
+	ErrorClassBadRequest  = apperror.KindBadRequest
+	ErrorClassForbidden   = apperror.KindForbidden
+	ErrorClassNotFound    = apperror.KindNotFound
+	ErrorClassConflict    = apperror.KindConflict
+	ErrorClassRateLimited = apperror.KindRateLimited
+	ErrorClassUnavailable = apperror.KindUnavailable
+	ErrorClassInternal    = apperror.KindInternal
+)
 
 type Error struct {
-	Class, Code, Message string
-	Retryable            bool
-	Cause                error
+	Class     ErrorClass
+	Code      string
+	Message   string
+	Retryable bool
+	Cause     error
 }
 
 func (e *Error) Error() string {
@@ -38,25 +56,10 @@ func (e *Error) ApplicationErrorKind() string {
 	if e == nil {
 		return ""
 	}
-	switch strings.ToLower(strings.TrimSpace(e.Class)) {
-	case "bad_request", "invalid":
-		return "bad_request"
-	case "forbidden", "unauthenticated", "unauthorized":
-		return "forbidden"
-	case "not_found":
-		return "not_found"
-	case "conflict":
-		return "conflict"
-	case "rate_limited":
-		return "rate_limited"
-	case "unavailable":
-		return "unavailable"
-	default:
-		if e.Retryable {
-			return "unavailable"
-		}
-		return "internal"
+	if e.Class == "" && e.Retryable {
+		return string(apperror.KindUnavailable)
 	}
+	return string(apperror.NormalizeKind(string(e.Class)))
 }
 
 func (*Error) ErrorParams() map[string]string { return nil }

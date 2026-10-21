@@ -8,15 +8,15 @@ import (
 
 func TestErrorClassificationContract(t *testing.T) {
 	tests := []struct {
-		class string
+		class ErrorClass
 		kind  apperror.ErrorKind
 		code  string
 	}{
-		{"bad_request", apperror.KindBadRequest, "tools.validation_failed"},
-		{"forbidden", apperror.KindForbidden, "tools.permission_denied"},
-		{"not_found", apperror.KindNotFound, "tools.resource_not_found"},
-		{"conflict", apperror.KindConflict, "tools.revision_conflict"},
-		{"unavailable", apperror.KindUnavailable, "tools.dependency_unavailable"},
+		{ErrorClassBadRequest, apperror.KindBadRequest, "tools.validation_failed"},
+		{ErrorClassForbidden, apperror.KindForbidden, "tools.permission_denied"},
+		{ErrorClassNotFound, apperror.KindNotFound, "tools.resource_not_found"},
+		{ErrorClassConflict, apperror.KindConflict, "tools.revision_conflict"},
+		{ErrorClassUnavailable, apperror.KindUnavailable, "tools.dependency_unavailable"},
 	}
 	for _, test := range tests {
 		err := &Error{Class: test.class, Code: test.code}
