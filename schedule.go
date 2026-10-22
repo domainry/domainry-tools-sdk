@@ -31,7 +31,7 @@ func ScheduleDefinitions() []Definition {
   "type":"object","additionalProperties":false,
   "properties":{
     "operation":{"type":"string","enum":["create","list","get","update","pause","resume","delete"]},"request_sha256":{"type":"string","pattern":"^[a-f0-9]{64}$"},
-    "plan":{"$ref":"#/$defs/plan"},"items":{"type":"array","items":{"$ref":"#/$defs/plan"}},"next_cursor":{"type":"string"},
+    "plan":{"$ref":"#/$defs/plan"},"items":{"type":"array","items":{"$ref":"#/$defs/plan"}},"next_cursor":{"type":"integer","minimum":1},
     "plan_id":{"type":"string"},"revision":{"type":"integer","minimum":1},"deleted":{"type":"boolean"},"replay":{"type":"boolean"}
   },
   "required":["operation","request_sha256"],
@@ -41,7 +41,7 @@ func ScheduleDefinitions() []Definition {
       {"type":"object","additionalProperties":false,"properties":{"type":{"const":"recurring"},"schedule":{"type":"object","additionalProperties":false,"properties":{"type":{"type":"string","enum":["daily_at","weekly_at","monthly_at"]},"time_of_day":{"type":"string"},"day_of_week":{"type":"string"},"day_of_month":{"type":"integer"}},"required":["type","time_of_day"]}},"required":["type","schedule"]}
     ]},
     "details":{"type":"object","additionalProperties":false,"properties":{"goal":{"type":"string"},"input":{"type":"string"},"allowed_tools":{"type":"array","items":{"type":"string"}},"completion_condition":{"type":"string"},"title":{"type":"string"},"message":{"type":"string"}}},
-    "plan":{"type":"object","additionalProperties":false,"properties":{"id":{"type":"string"},"name":{"type":"string"},"kind":{"type":"string","enum":["background_task","follow_up","reminder"]},"timezone":{"type":"string"},"trigger":{"$ref":"#/$defs/trigger"},"details":{"$ref":"#/$defs/details"},"status":{"type":"string","enum":["enabled","disabled","paused"]},"revision":{"type":"integer","minimum":1},"conversation_id":{"type":"string"},"run_id":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"}},"required":["id","name","kind","timezone","trigger","details","status","revision","created_at","updated_at"]}
+    "plan":{"type":"object","additionalProperties":false,"properties":{"id":{"type":"integer","minimum":1},"plan_id":{"type":"string","minLength":1,"maxLength":191},"name":{"type":"string"},"kind":{"type":"string","enum":["background_task","follow_up","reminder"]},"timezone":{"type":"string"},"trigger":{"$ref":"#/$defs/trigger"},"details":{"$ref":"#/$defs/details"},"status":{"type":"string","enum":["enabled","disabled","paused"]},"revision":{"type":"integer","minimum":1},"conversation_id":{"type":"string"},"run_id":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"}},"required":["id","plan_id","name","kind","timezone","trigger","details","status","revision","created_at","updated_at"]}
   }
 }`)
 	base := func(key, description, effect, idempotency string, input json.RawMessage) Definition {
@@ -52,7 +52,7 @@ func ScheduleDefinitions() []Definition {
 		return Definition{Key: key, Version: "2", ActionKey: "agent.conversation_tools." + key, Description: description, InputSchema: input, OutputSchema: output, Effect: effect, Idempotency: idempotency, Parallelism: parallelism, TimeoutMillis: 10000, MaxOutputBytes: 65536}
 	}
 	createInput := json.RawMessage(`{"type":"object","additionalProperties":false,"properties":{"kind":{"type":"string","enum":["background_task","follow_up","reminder"]},"name":{"type":"string","minLength":1,"maxLength":500},"timezone":{"type":"string","minLength":1,"maxLength":128},"trigger":` + string(trigger) + `,"details":` + string(details) + `},"required":["kind","name","trigger","details"]}`)
-	listInput := json.RawMessage(`{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string","enum":["enabled","disabled","paused"]},"cursor":{"type":"string","maxLength":191},"limit":{"type":"integer","minimum":1,"maximum":100}}}`)
+	listInput := json.RawMessage(`{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string","enum":["enabled","disabled","paused"]},"cursor":{"type":"integer","minimum":0},"limit":{"type":"integer","minimum":1,"maximum":100}}}`)
 	getInput := json.RawMessage(`{"type":"object","additionalProperties":false,"properties":{"plan_id":{"type":"string","minLength":1,"maxLength":191}},"required":["plan_id"]}`)
 	updateInput := json.RawMessage(`{"type":"object","additionalProperties":false,"properties":{"plan_id":{"type":"string","minLength":1,"maxLength":191},"expected_revision":{"type":"integer","minimum":1},"name":{"type":"string","minLength":1,"maxLength":500},"timezone":{"type":"string","minLength":1,"maxLength":128},"trigger":` + string(trigger) + `,"details":` + string(details) + `},"required":["plan_id","expected_revision"],"minProperties":3}`)
 	statusInput := json.RawMessage(`{"type":"object","additionalProperties":false,"properties":{"plan_id":{"type":"string","minLength":1,"maxLength":191},"expected_revision":{"type":"integer","minimum":1}},"required":["plan_id","expected_revision"]}`)
