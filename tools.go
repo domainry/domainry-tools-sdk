@@ -144,15 +144,12 @@ type Request struct {
 	Authority         Authority
 	ConversationID    string
 	RunID             string
-	// CorrelationID is assigned by the execution owner and propagated across
-	// tool-owner boundaries. A model cannot supply or replace it.
-	CorrelationID  string
-	Step           int
-	Call           Call
-	Definition     Definition
-	IdempotencyKey string
-	ConfirmationID string
-	Confirmation   *Confirmation
+	Step              int
+	Call              Call
+	Definition        Definition
+	IdempotencyKey    string
+	ConfirmationID    string
+	Confirmation      *Confirmation
 	// Server-only worker guard. Local transactional effects validate this
 	// against persisted state; it is never accepted from model arguments.
 	LeaseOwner string
